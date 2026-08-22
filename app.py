@@ -437,8 +437,8 @@ for nm, x, y, mag in sorted(visible, key=lambda z: z[3])[:11]:
         card_id
     )
 
-    c.save()
-    return path
+        c.save()
+     return path
 
 def layout(title, body):
     return f"""<!doctype html><html lang="ru"><head><meta charset="utf-8">
