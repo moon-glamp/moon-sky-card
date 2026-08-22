@@ -1,0 +1,16 @@
+services:
+  moon-sky:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      BASE_URL: "https://sky.example.com"
+      ADMIN_PIN: "change-me"
+      MOON_LAT: "43.565"
+      MOON_LON: "41.278"
+      MOON_UTC_OFFSET: "3"
+      MOON_PLACE: "Архыз"
+    volumes:
+      - ./data:/app/data
+      - ./generated:/app/generated
