@@ -208,8 +208,8 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
     # КАРТА НЕБА
     # -----------------------------
     cx = W / 2
-    cy = H - 139 * mm
-    R = 72 * mm
+    cy = H - 137 * mm
+    R = 68 * mm
 
     c.setFillColor(night)
     c.circle(cx, cy, R, fill=1, stroke=0)
@@ -259,13 +259,13 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
     # подписи наиболее ярких звёзд
     for nm, x, y, mag in sorted(visible, key=lambda z: z[3])[:11]:
         c.setFillColor(starwhite)
-        c.setFont("MoonSans", 5.8)
+        c.setFont("MoonSans", 6.6)
         c.drawString(x + 3.5, y + 1.5, nm)
 
     # -----------------------------
     # ЧТО НАБЛЮДАЛИ
     # -----------------------------
-    info_y = 54 * mm
+    info_y = 58 * mm
 
     c.setFillColor(charcoal)
     c.setFont("MoonSansBold", 7.5)
@@ -306,7 +306,7 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
     # -----------------------------
     personal = (
         f"{guest_name}, сохраните эту ночь."
-        if guest_name
+        if guest_name and guest_name.strip() and guest_name.strip().upper() not in ("NA", "N/A", "NONE")
         else "Сохраните эту ночь."
     )
 
@@ -321,7 +321,7 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
     c.setFillColor(soft)
     c.setFont("MoonSans", 6.8)
 
-    if notes:
+    if notes and notes.strip().lower() not in ("test", "тест", "-", "none")
         c.drawCentredString(
             W / 2,
             info_y - 10 * mm,
@@ -331,7 +331,7 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
         c.drawCentredString(
             W / 2,
             info_y - 10 * mm,
-            "Пусть воспоминания о звёздах остаются с вами."
+            "Сохраните эту ночь среди звёзд."
         )
 
     # -----------------------------
