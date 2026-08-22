@@ -264,7 +264,7 @@ for nm, x, y, mag in sorted(visible, key=lambda z: z[3])[:11]:
 
     if x < cx:
         label_x = max(x - 4.5, cx - R + 18)
-        c.drawRightString(label_x, y + 2.0, nm)
+            c.drawRightString(label_x, y + 2.0, nm)
     else:
         label_x = min(x + 4.5, cx + R - 18)
         c.drawString(label_x, y + 2.0, nm)
