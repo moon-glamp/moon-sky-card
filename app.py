@@ -259,8 +259,8 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
     # подписи наиболее ярких звёзд
     for nm, x, y, mag in sorted(visible, key=lambda z: z[3])[:11]:
         c.setFillColor(starwhite)
-        c.setFont("MoonSans", 6.6)
-        c.drawString(x + 3.5, y + 1.5, nm)
+        c.setFont("MoonSans", 6.2)
+        c.drawString(x + 4.5, y + 2.0, nm)
 
     # -----------------------------
     # ЧТО НАБЛЮДАЛИ
