@@ -440,7 +440,7 @@ for nm, x, y, mag in sorted(visible, key=lambda z: z[3])[:11]:
     c.save()
     return path
 
-def layout(title, body):
+    def layout(title, body):
     return f"""<!doctype html><html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title>
 <style>
