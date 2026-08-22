@@ -321,7 +321,7 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
     c.setFillColor(soft)
     c.setFont("MoonSans", 6.8)
 
-    if notes and notes.strip().lower() not in ("test", "тест", "-", "none")
+    if notes and notes.strip().lower() not in ("test", "тест", "-", "none"):
         c.drawCentredString(
             W / 2,
             info_y - 10 * mm,
