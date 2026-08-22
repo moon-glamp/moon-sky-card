@@ -118,63 +118,319 @@ def qr_bytes(url):
     b=io.BytesIO(); img.save(b,format="PNG"); b.seek(0); return b
 
 def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
-    dt=datetime.strptime(f"{visit_date} {visit_time}","%Y-%m-%d %H:%M")
-    path=OUT_DIR/f"MoonSky_{card_id}.pdf"
-    c=canvas.Canvas(str(path),pagesize=A4)
-    W,H=A4
-    ivory=HexColor("#FAF8F2"); charcoal=HexColor("#414244")
-    gold=HexColor("#C4AA78"); night=HexColor("#202328"); sand=HexColor("#E7DDC9")
-    c.setFillColor(ivory); c.rect(0,0,W,H,fill=1,stroke=0)
+    dt = datetime.strptime(f"{visit_date} {visit_time}", "%Y-%m-%d %H:%M")
+    path = OUT_DIR / f"MoonSky_{card_id}.pdf"
 
-    c.setFillColor(charcoal); c.setFont("MoonSans",17)
-    c.drawCentredString(W/2,H-28*mm,"M O O N   O B S E R V A T O R Y")
-    c.setFillColor(gold); c.setFont("MoonSansBold",8)
-    c.drawCentredString(W/2,H-35*mm,"MOON GLAMP • ARKHYZ")
-    c.setFillColor(charcoal); c.setFont("MoonSansBold",17)
-    c.drawCentredString(W/2,H-50*mm,"НЕБО ВАШЕЙ НОЧИ")
-    c.setFont("MoonSans",9)
-    c.drawCentredString(W/2,H-57*mm,f"{dt.strftime('%d.%m.%Y')} • {visit_time} • {SETTINGS['place']}")
+    c = canvas.Canvas(str(path), pagesize=A4)
+    W, H = A4
 
-    cx,cy=W/2,H-136*mm; R=64*mm
-    c.setFillColor(night); c.circle(cx,cy,R,fill=1,stroke=0)
-    c.setStrokeColor(gold); c.setLineWidth(.6); c.circle(cx,cy,R,fill=0,stroke=1)
-    c.setFillColor(gold); c.setFont("MoonSansBold",7)
-    c.drawCentredString(cx,cy+R+4,"N"); c.drawCentredString(cx,cy-R-9,"S")
-    c.drawCentredString(cx-R-7,cy-2,"E"); c.drawCentredString(cx+R+7,cy-2,"W")
-    c.setStrokeColor(HexColor("#6E695F")); c.setLineWidth(.25)
-    for f in (.33,.66): c.circle(cx,cy,R*f,fill=0,stroke=1)
+    ivory = HexColor("#FAF8F2")
+    charcoal = HexColor("#313337")
+    gold = HexColor("#BFA46F")
+    night = HexColor("#171C24")
+    sand = HexColor("#E9DFC9")
+    soft = HexColor("#77766F")
+    starwhite = HexColor("#FFFDF6")
 
-    visible=[]
-    for nm,ra,dec,mag in STARS:
-        alt,az=altaz(ra,dec,dt)
-        if alt>0:
-            x,y=sky_xy(alt,az,cx,cy,R)
-            visible.append((nm,x,y,mag))
-            sz=max(.8,3.0-mag*.55)
-            c.setFillColor(white); c.circle(x,y,sz,fill=1,stroke=0)
-    for nm,x,y,mag in sorted(visible,key=lambda z:z[3])[:9]:
-        c.setFillColor(sand); c.setFont("MoonSans",5.3); c.drawString(x+3,y+2,nm)
+    # Фон
+    c.setFillColor(ivory)
+    c.rect(0, 0, W, H, fill=1, stroke=0)
 
-    y0=H-214*mm
-    c.setFillColor(charcoal); c.setFont("MoonSansBold",8)
-    c.drawCentredString(W/2,y0,"СЕГОДНЯ ВЫ НАБЛЮДАЛИ:")
-    c.setFont("MoonSans",9)
-    c.drawCentredString(W/2,y0-7*mm,(" • ".join(objects) if objects else "звёздное небо Архыза")[:105])
+    # -----------------------------
+    # ФИРМЕННЫЙ ЗНАК: ЛУНА + ГОРЫ
+    # -----------------------------
+    logo_y = H - 20 * mm
 
-    c.setFillColor(gold); c.setFont("MoonSansBold",11)
-    msg=f"{guest_name}, сохраните эту ночь." if guest_name else "Сохраните эту ночь."
-    c.drawCentredString(W/2,33*mm,msg)
+    c.setFillColor(gold)
+    c.circle(W / 2, logo_y, 7 * mm, fill=1, stroke=0)
+
+    # вырез серпа
+    c.setFillColor(ivory)
+    c.circle(W / 2 + 3 * mm, logo_y + 1 * mm, 7 * mm, fill=1, stroke=0)
+
+    # горы
+    c.setStrokeColor(charcoal)
+    c.setLineWidth(1.1)
+    c.line(W / 2 - 8 * mm, logo_y - 5 * mm,
+           W / 2 - 2 * mm, logo_y + 1 * mm)
+    c.line(W / 2 - 2 * mm, logo_y + 1 * mm,
+           W / 2 + 3 * mm, logo_y - 4 * mm)
+    c.line(W / 2 + 1 * mm, logo_y - 2 * mm,
+           W / 2 + 5 * mm, logo_y + 1 * mm)
+    c.line(W / 2 + 5 * mm, logo_y + 1 * mm,
+           W / 2 + 9 * mm, logo_y - 5 * mm)
+
+    # -----------------------------
+    # ЗАГОЛОВОК
+    # -----------------------------
+    c.setFillColor(charcoal)
+    c.setFont("MoonSans", 13)
+    c.drawCentredString(
+        W / 2,
+        H - 33 * mm,
+        "M O O N   O B S E R V A T O R Y"
+    )
+
+    c.setStrokeColor(gold)
+    c.setLineWidth(0.5)
+    c.line(W / 2 - 22 * mm, H - 38 * mm,
+           W / 2 - 4 * mm, H - 38 * mm)
+    c.line(W / 2 + 4 * mm, H - 38 * mm,
+           W / 2 + 22 * mm, H - 38 * mm)
+
+    c.setFillColor(gold)
+    c.circle(W / 2, H - 38 * mm, 1.1 * mm, fill=1, stroke=0)
+
+    c.setFillColor(charcoal)
+    c.setFont("MoonSansBold", 23)
+    c.drawCentredString(
+        W / 2,
+        H - 51 * mm,
+        "НЕБО ВАШЕЙ НОЧИ"
+    )
+
+    # Дата / время / место
+    c.setFont("MoonSans", 9.5)
+    c.setFillColor(charcoal)
+
+    meta = (
+        f"{dt.strftime('%d.%m.%Y')}   •   "
+        f"{visit_time}   •   {SETTINGS['place']}"
+    )
+
+    c.drawCentredString(
+        W / 2,
+        H - 59 * mm,
+        meta
+    )
+
+    # -----------------------------
+    # КАРТА НЕБА
+    # -----------------------------
+    cx = W / 2
+    cy = H - 139 * mm
+    R = 72 * mm
+
+    c.setFillColor(night)
+    c.circle(cx, cy, R, fill=1, stroke=0)
+
+    # золотая рамка
+    c.setStrokeColor(gold)
+    c.setLineWidth(0.65)
+    c.circle(cx, cy, R, fill=0, stroke=1)
+
+    # внутренние круги
+    c.setStrokeColor(HexColor("#404650"))
+    c.setLineWidth(0.25)
+
+    for f in (0.33, 0.66):
+        c.circle(cx, cy, R * f, fill=0, stroke=1)
+
+    # направления
+    c.setFillColor(gold)
+    c.setFont("MoonSansBold", 9)
+
+    c.drawCentredString(cx, cy + R + 4 * mm, "N")
+    c.drawCentredString(cx, cy - R - 6 * mm, "S")
+    c.drawCentredString(cx - R - 4 * mm, cy - 2, "E")
+    c.drawCentredString(cx + R + 4 * mm, cy - 2, "W")
+
+    # звезды
+    visible = []
+
+    for nm, ra, dec, mag in STARS:
+        alt, az = altaz(ra, dec, dt)
+
+        if alt > 0:
+            x, y = sky_xy(alt, az, cx, cy, R)
+
+            visible.append((nm, x, y, mag))
+
+            size = max(0.8, 3.3 - mag * 0.55)
+
+            # лёгкое сияние для ярких звёзд
+            if mag < 1.5:
+                c.setFillColor(HexColor("#D9D2C5"))
+                c.circle(x, y, size + 1.8, fill=1, stroke=0)
+
+            c.setFillColor(starwhite)
+            c.circle(x, y, size, fill=1, stroke=0)
+
+    # подписи наиболее ярких звёзд
+    for nm, x, y, mag in sorted(visible, key=lambda z: z[3])[:11]:
+        c.setFillColor(starwhite)
+        c.setFont("MoonSans", 5.8)
+        c.drawString(x + 3.5, y + 1.5, nm)
+
+    # -----------------------------
+    # ЧТО НАБЛЮДАЛИ
+    # -----------------------------
+    info_y = 54 * mm
+
+    c.setFillColor(charcoal)
+    c.setFont("MoonSansBold", 7.5)
+    c.drawCentredString(
+        W / 2,
+        info_y + 17 * mm,
+        "С Е Г О Д Н Я   В Ы   Н А Б Л Ю Д А Л И"
+    )
+
+    observed = " • ".join(objects) if objects else "Звёздное небо Архыза"
+
+    c.setFillColor(gold)
+
+    obj_font_size = 16
+    if len(observed) > 35:
+        obj_font_size = 12
+
+    c.setFont("MoonSans", obj_font_size)
+    c.drawCentredString(
+        W / 2,
+        info_y + 8 * mm,
+        observed
+    )
+
+    # декоративная линия
+    c.setStrokeColor(gold)
+    c.setLineWidth(0.5)
+    c.line(W / 2 - 35 * mm, info_y + 3 * mm,
+           W / 2 - 5 * mm, info_y + 3 * mm)
+    c.line(W / 2 + 5 * mm, info_y + 3 * mm,
+           W / 2 + 35 * mm, info_y + 3 * mm)
+
+    c.setFillColor(gold)
+    c.circle(W / 2, info_y + 3 * mm, 1 * mm, fill=1, stroke=0)
+
+    # -----------------------------
+    # ПЕРСОНАЛИЗАЦИЯ
+    # -----------------------------
+    personal = (
+        f"{guest_name}, сохраните эту ночь."
+        if guest_name
+        else "Сохраните эту ночь."
+    )
+
+    c.setFillColor(charcoal)
+    c.setFont("MoonSans", 11)
+    c.drawCentredString(
+        W / 2,
+        info_y - 4 * mm,
+        personal
+    )
+
+    c.setFillColor(soft)
+    c.setFont("MoonSans", 6.8)
+
     if notes:
-        c.setFillColor(charcoal); c.setFont("MoonSans",6.5)
-        c.drawCentredString(W/2,28*mm,notes[:120])
+        c.drawCentredString(
+            W / 2,
+            info_y - 10 * mm,
+            notes[:100]
+        )
+    else:
+        c.drawCentredString(
+            W / 2,
+            info_y - 10 * mm,
+            "Пусть воспоминания о звёздах остаются с вами."
+        )
 
-    public_url=f"{BASE_URL}/sky/{card_id}"
-    qr=qr_bytes(public_url)
-    c.drawImage(ImageReader(qr),14*mm,12*mm,24*mm,24*mm,mask='auto')
-    c.setFillColor(charcoal); c.setFont("MoonSans",5.5)
-    c.drawString(40*mm,21*mm,"Откройте цифровую версию карты")
-    c.setFillColor(HexColor("#77796E"))
-    c.drawRightString(W-14*mm,15*mm,f"ID {card_id}")
+    # -----------------------------
+    # QR-КОД
+    # -----------------------------
+    public_url = f"{BASE_URL}/sky/{card_id}"
+    qr = qr_bytes(public_url)
+
+    qr_x = 15 * mm
+    qr_y = 10 * mm
+    qr_size = 25 * mm
+
+    # рамка QR
+    c.setStrokeColor(gold)
+    c.setLineWidth(0.7)
+    c.roundRect(
+        qr_x - 2 * mm,
+        qr_y - 2 * mm,
+        qr_size + 4 * mm,
+        qr_size + 4 * mm,
+        2 * mm,
+        fill=0,
+        stroke=1
+    )
+
+    c.drawImage(
+        ImageReader(qr),
+        qr_x,
+        qr_y,
+        qr_size,
+        qr_size,
+        mask="auto"
+    )
+
+    c.setFillColor(charcoal)
+    c.setFont("MoonSansBold", 6.5)
+    c.drawString(
+        qr_x + qr_size + 6 * mm,
+        qr_y + 17 * mm,
+        "ОТКРОЙТЕ ЦИФРОВУЮ"
+    )
+    c.drawString(
+        qr_x + qr_size + 6 * mm,
+        qr_y + 13 * mm,
+        "ВЕРСИЮ КАРТЫ"
+    )
+
+    c.setFillColor(soft)
+    c.setFont("MoonSans", 5.5)
+    c.drawString(
+        qr_x + qr_size + 6 * mm,
+        qr_y + 7 * mm,
+        "Наведите камеру на QR-код"
+    )
+    c.drawString(
+        qr_x + qr_size + 6 * mm,
+        qr_y + 4 * mm,
+        "и сохраните эту ночь."
+    )
+
+    # -----------------------------
+    # MOON GLAMP ВНИЗУ
+    # -----------------------------
+    c.setFillColor(charcoal)
+    c.setFont("MoonSans", 9)
+    c.drawCentredString(
+        W / 2,
+        17 * mm,
+        "M O O N   G L A M P"
+    )
+
+    c.setFillColor(gold)
+    c.setFont("MoonSans", 6)
+    c.drawCentredString(
+        W / 2,
+        12.5 * mm,
+        "A R K H Y Z"
+    )
+
+    # ID карты
+    c.setFillColor(gold)
+    c.circle(W - 38 * mm, 18 * mm, 1.2 * mm, fill=1, stroke=0)
+
+    c.setFillColor(charcoal)
+    c.setFont("MoonSansBold", 5.5)
+    c.drawString(
+        W - 34 * mm,
+        18 * mm,
+        "ID КАРТЫ"
+    )
+
+    c.setFillColor(soft)
+    c.setFont("MoonSans", 5.5)
+    c.drawString(
+        W - 34 * mm,
+        13.5 * mm,
+        card_id
+    )
+
     c.save()
     return path
 
