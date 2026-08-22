@@ -12,9 +12,16 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.colors import HexColor, white
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import qrcode
 
 APP_DIR = Path(__file__).parent
+FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+pdfmetrics.registerFont(TTFont("MoonSans", FONT_REGULAR))
+pdfmetrics.registerFont(TTFont("MoonSansBold", FONT_BOLD))
 DATA_DIR = APP_DIR / "data"
 OUT_DIR = APP_DIR / "generated"
 DB_PATH = DATA_DIR / "moon_sky.db"
