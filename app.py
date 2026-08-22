@@ -126,19 +126,19 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
     gold=HexColor("#C4AA78"); night=HexColor("#202328"); sand=HexColor("#E7DDC9")
     c.setFillColor(ivory); c.rect(0,0,W,H,fill=1,stroke=0)
 
-    c.setFillColor(charcoal); c.setFont("Helvetica",17)
+    c.setFillColor(charcoal); c.setFont("MoonSans",17)
     c.drawCentredString(W/2,H-28*mm,"M O O N   O B S E R V A T O R Y")
-    c.setFillColor(gold); c.setFont("Helvetica-Bold",8)
+    c.setFillColor(gold); c.setFont("MoonSansBold",8)
     c.drawCentredString(W/2,H-35*mm,"MOON GLAMP • ARKHYZ")
-    c.setFillColor(charcoal); c.setFont("Helvetica-Bold",17)
+    c.setFillColor(charcoal); c.setFont("MoonSansBold",17)
     c.drawCentredString(W/2,H-50*mm,"НЕБО ВАШЕЙ НОЧИ")
-    c.setFont("Helvetica",9)
+    c.setFont("MoonSans",9)
     c.drawCentredString(W/2,H-57*mm,f"{dt.strftime('%d.%m.%Y')} • {visit_time} • {SETTINGS['place']}")
 
     cx,cy=W/2,H-136*mm; R=64*mm
     c.setFillColor(night); c.circle(cx,cy,R,fill=1,stroke=0)
     c.setStrokeColor(gold); c.setLineWidth(.6); c.circle(cx,cy,R,fill=0,stroke=1)
-    c.setFillColor(gold); c.setFont("Helvetica-Bold",7)
+    c.setFillColor(gold); c.setFont("MoonSansBold",7)
     c.drawCentredString(cx,cy+R+4,"N"); c.drawCentredString(cx,cy-R-9,"S")
     c.drawCentredString(cx-R-7,cy-2,"E"); c.drawCentredString(cx+R+7,cy-2,"W")
     c.setStrokeColor(HexColor("#6E695F")); c.setLineWidth(.25)
@@ -153,25 +153,25 @@ def create_pdf(card_id, guest_name, visit_date, visit_time, objects, notes=""):
             sz=max(.8,3.0-mag*.55)
             c.setFillColor(white); c.circle(x,y,sz,fill=1,stroke=0)
     for nm,x,y,mag in sorted(visible,key=lambda z:z[3])[:9]:
-        c.setFillColor(sand); c.setFont("Helvetica",5.3); c.drawString(x+3,y+2,nm)
+        c.setFillColor(sand); c.setFont("MoonSans",5.3); c.drawString(x+3,y+2,nm)
 
     y0=H-214*mm
-    c.setFillColor(charcoal); c.setFont("Helvetica-Bold",8)
+    c.setFillColor(charcoal); c.setFont("MoonSansBold",8)
     c.drawCentredString(W/2,y0,"СЕГОДНЯ ВЫ НАБЛЮДАЛИ:")
-    c.setFont("Helvetica",9)
+    c.setFont("MoonSans",9)
     c.drawCentredString(W/2,y0-7*mm,(" • ".join(objects) if objects else "звёздное небо Архыза")[:105])
 
-    c.setFillColor(gold); c.setFont("Helvetica-Bold",11)
+    c.setFillColor(gold); c.setFont("MoonSansBold",11)
     msg=f"{guest_name}, сохраните эту ночь." if guest_name else "Сохраните эту ночь."
     c.drawCentredString(W/2,33*mm,msg)
     if notes:
-        c.setFillColor(charcoal); c.setFont("Helvetica",6.5)
+        c.setFillColor(charcoal); c.setFont("MoonSans",6.5)
         c.drawCentredString(W/2,28*mm,notes[:120])
 
     public_url=f"{BASE_URL}/sky/{card_id}"
     qr=qr_bytes(public_url)
     c.drawImage(ImageReader(qr),14*mm,12*mm,24*mm,24*mm,mask='auto')
-    c.setFillColor(charcoal); c.setFont("Helvetica",5.5)
+    c.setFillColor(charcoal); c.setFont("MoonSans",5.5)
     c.drawString(40*mm,21*mm,"Откройте цифровую версию карты")
     c.setFillColor(HexColor("#77796E"))
     c.drawRightString(W-14*mm,15*mm,f"ID {card_id}")
