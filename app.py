@@ -719,7 +719,7 @@ def create_card(
 def public_card(card_id: str):
     con=db(); r=con.execute("SELECT * FROM cards WHERE id=?",(card_id.upper(),)).fetchone(); con.close()
     if not r: raise HTTPException(404,"Card not found")
-        objects = json.loads(r["observed_objects"] or "[]")
+    objects = json.loads(r["observed_objects"] or "[]")
     name = r["guest_name"] or "Гость Moon"
     objects_text = " · ".join(objects) if objects else "Звёздное небо Архыза"
     notes_html = f'<p class="small">{r["notes"]}</p>' if r["notes"] else ""
