@@ -249,8 +249,7 @@ def admin_page():
     <label>Что наблюдали</label><div class="checks">{checks}</div>
     <label>Заметка</label><textarea name="notes" rows="3" placeholder="Можно оставить пустым"></textarea>
     <button style="margin-top:16px;width:100%">СОЗДАТЬ КАРТУ</button></form></div>
-    <div class="card"><h2>Moon Sky Card</h2><p class="small">Первая страница сразу открывает рабочую форму — без PIN-входа.</p><p class="small">После создания формируются ID, PDF, QR и цифровая страница гостя.</p><p class="small">Публичный адрес: <b>{BASE_URL}</b></p></div></div>
-    <div class="card"><h2>Последние карты</h2><table><tr><th>Дата</th><th>Гость</th><th>Наблюдали</th><th></th></tr>{trs or '<tr><td colspan="4">Пока нет карт</td></tr>'}</table></div>''')
+    
 
 # ---------------------------------------------------------
 # ADMIN LOGIN
