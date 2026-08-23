@@ -249,6 +249,7 @@ def admin_page():
     <label>Что наблюдали</label><div class="checks">{checks}</div>
     <label>Заметка</label><textarea name="notes" rows="3" placeholder="Можно оставить пустым"></textarea>
     <button style="margin-top:16px;width:100%">СОЗДАТЬ КАРТУ</button></form></div>
+    ''')
     
 
 # ---------------------------------------------------------
