@@ -717,43 +717,143 @@ def create_card(
 
 @app.get("/sky/{card_id}", response_class=HTMLResponse)
 def public_card(card_id: str):
-    con=db(); r=con.execute("SELECT * FROM cards WHERE id=?",(card_id.upper(),)).fetchone(); con.close()
-    if not r: raise HTTPException(404,"Card not found")
+    con = db()
+    r = con.execute(
+        "SELECT * FROM cards WHERE id=?",
+        (card_id.upper(),)
+    ).fetchone()
+    con.close()
+
+    if not r:
+        raise HTTPException(404, "Card not found")
+
     objects = json.loads(r["observed_objects"] or "[]")
     name = r["guest_name"] or "Гость Moon"
-    objects_text = " · ".join(objects) if objects else "Звёздное небо Архыза"
-    notes_html = f'<p class="small">{r["notes"]}</p>' if r["notes"] else ""
+    notes = r["notes"] or ""
+
+    objects_text = " • ".join(objects) if objects else "Звёздное небо Архыза"
+
+    visit_date = r["visit_date"]
+    try:
+        visit_date_display = datetime.strptime(
+            visit_date,
+            "%Y-%m-%d"
+        ).strftime("%d.%m.%Y")
+    except ValueError:
+        visit_date_display = visit_date
+
+    notes_html = ""
+    if notes:
+        notes_html = f"""
+        <div style="
+            margin:26px auto 0;
+            max-width:560px;
+            padding:18px 22px;
+            border-top:1px solid var(--sa);
+            border-bottom:1px solid var(--sa);
+            font-size:16px;
+            line-height:1.6;
+        ">
+            {notes}
+        </div>
+        """
 
     return layout(
         "Moon Observatory — ваша карта",
         f"""
-        <div class="card hero">
-            <div class="meta">
-                {r["visit_date"]} &middot; {r["visit_time"]} &middot; {SETTINGS["place"]}
+        <div class="card" style="
+            max-width:760px;
+            margin:35px auto;
+            text-align:center;
+            padding:42px 28px;
+        ">
+
+            <div style="
+                letter-spacing:7px;
+                font-size:23px;
+                margin-bottom:7px;
+            ">
+                MOON OBSERVATORY
             </div>
 
-            <h1>Небо вашей ночи</h1>
+            <div style="
+                color:var(--go);
+                letter-spacing:4px;
+                font-size:10px;
+                margin-bottom:32px;
+            ">
+                MOON GLAMP • ARKHYZ
+            </div>
 
-            <p>{name}</p>
+            <div class="meta" style="
+                color:var(--go);
+                letter-spacing:2px;
+                margin-bottom:16px;
+            ">
+                {visit_date_display} &middot; {r["visit_time"]} &middot; {SETTINGS["place"]}
+            </div>
 
-            <div class="objects">
+            <h1 style="
+                font-family:Georgia, serif;
+                font-size:48px;
+                font-weight:400;
+                margin:10px 0 24px;
+            ">
+                Небо вашей ночи
+            </h1>
+
+            <div style="
+                font-size:22px;
+                margin-bottom:34px;
+            ">
+                {name}
+            </div>
+
+            <div style="
+                font-size:10px;
+                font-weight:700;
+                letter-spacing:5px;
+                margin-bottom:13px;
+            ">
+                СЕГОДНЯ ВЫ НАБЛЮДАЛИ
+            </div>
+
+            <div style="
+                color:var(--go);
+                font-size:27px;
+                line-height:1.45;
+                margin-bottom:8px;
+            ">
                 {objects_text}
             </div>
 
             {notes_html}
 
-            <p>
-                <a class="btn" href="/sky/{r["id"]}/pdf">
+            <div style="margin-top:38px">
+                <a
+                    class="btn"
+                    href="/sky/{r["id"]}/pdf"
+                    style="
+                        display:inline-block;
+                        text-decoration:none;
+                        padding:16px 28px;
+                    "
+                >
                     СКАЧАТЬ PDF
                 </a>
-            </p>
+            </div>
 
-            <p class="small">
-                ID карты: {r["id"]}
-            </p>
+            <div class="small" style="
+                margin-top:30px;
+                letter-spacing:1px;
+            ">
+                ID КАРТЫ: {r["id"]}
+            </div>
+
         </div>
         """
     )
+
 @app.get("/sky/{card_id}/pdf")
 def get_pdf(card_id: str):
     con=db(); r=con.execute("SELECT * FROM cards WHERE id=?",(card_id.upper(),)).fetchone(); con.close()
