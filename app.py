@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -20,7 +20,9 @@ DB_PATH = DATA_DIR / "moon_sky.db"
 DATA_DIR.mkdir(exist_ok=True)
 OUT_DIR.mkdir(exist_ok=True)
 
-BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+BASE_URL = os.getenv("BASE_URL", "https://moon-sky-card.onrender.com").rstrip("/")
+ADMIN_USER = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "CHANGE-ME-NOW")
 SETTINGS = {
     "latitude": float(os.getenv("MOON_LAT", "43.565")),
     "longitude": float(os.getenv("MOON_LON", "41.278")),
@@ -276,7 +278,7 @@ def get_pdf(card_id: str):
     if not r: raise HTTPException(404,"Card not found")
     path=OUT_DIR/r['pdf_filename']
     if not path.exists(): raise HTTPException(404,"PDF missing")
-    return FileResponse(path, media_type="application/pdf",filename=path.name,)
+    return FileResponse(path,media_type="application/pdf",filename="path.name)
 
 @app.get("/health")
 def health(): return {"ok":True,"base_url":BASE_URL,"place":SETTINGS['place']}
@@ -284,3 +286,4 @@ def health(): return {"ok":True,"base_url":BASE_URL,"place":SETTINGS['place']}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app,host="0.0.0.0",port=int(os.getenv("PORT","8000")))
+"
