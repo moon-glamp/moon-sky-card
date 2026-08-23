@@ -276,7 +276,7 @@ def get_pdf(card_id: str):
     if not r: raise HTTPException(404,"Card not found")
     path=OUT_DIR/r['pdf_filename']
     if not path.exists(): raise HTTPException(404,"PDF missing")
-    return FileResponse(path,media_type="application/pdf",filename="path.name,)
+    return FileResponse(path, media_type="application/pdf",filename=path.name,)
 
 @app.get("/health")
 def health(): return {"ok":True,"base_url":BASE_URL,"place":SETTINGS['place']}
