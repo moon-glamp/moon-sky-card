@@ -252,18 +252,236 @@ def admin_page():
     <div class="card"><h2>Moon Sky Card</h2><p class="small">Первая страница сразу открывает рабочую форму — без PIN-входа.</p><p class="small">После создания формируются ID, PDF, QR и цифровая страница гостя.</p><p class="small">Публичный адрес: <b>{BASE_URL}</b></p></div></div>
     <div class="card"><h2>Последние карты</h2><table><tr><th>Дата</th><th>Гость</th><th>Наблюдали</th><th></th></tr>{trs or '<tr><td colspan="4">Пока нет карт</td></tr>'}</table></div>''')
 
+# ---------------------------------------------------------
+# ADMIN LOGIN
+# ---------------------------------------------------------
+
+ADMIN_USER = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "MoonSky2026")
+AUTH_COOKIE = "moon_admin"
+
+
+def admin_logged_in(request: Request):
+    token = request.cookies.get(AUTH_COOKIE, "")
+    expected = uuid.uuid5(
+        uuid.NAMESPACE_DNS,
+        ADMIN_USER + ADMIN_PASSWORD
+    ).hex
+    return token == expected
+
+
+def login_page(error=""):
+    error_html = ""
+
+    if error:
+        error_html = f"""
+        <p style="
+            color:#9c4f4f;
+            text-align:center;
+            margin-top:16px;
+        ">
+            {error}
+        </p>
+        """
+
+    return layout(
+        "Moon Observatory — вход",
+        f"""
+        <div class="card" style="
+            max-width:520px;
+            margin:60px auto;
+            padding:38px;
+        ">
+
+            <div style="text-align:center;margin-bottom:30px">
+
+                <div style="
+                    letter-spacing:7px;
+                    font-size:25px;
+                    margin-bottom:8px;
+                ">
+                    MOON
+                </div>
+
+                <div style="
+                    color:var(--go);
+                    letter-spacing:4px;
+                    font-size:10px;
+                ">
+                    OBSERVATORY • MOON GLAMP
+                </div>
+
+                <h2 style="
+                    margin-top:34px;
+                    margin-bottom:8px;
+                    font-size:28px;
+                ">
+                    Вход администратора
+                </h2>
+
+                <p class="small">
+                    Создание персональных карт ночного неба
+                </p>
+
+            </div>
+
+            <form action="/login" method="post">
+
+                <label>Логин</label>
+                <input
+                    name="username"
+                    autocomplete="username"
+                    required
+                >
+
+                <label>Пароль</label>
+                <input
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <button style="
+                    width:100%;
+                    margin-top:20px;
+                ">
+                    ВОЙТИ
+                </button>
+
+                {error_html}
+
+            </form>
+
+        </div>
+        """
+    )
+
+
 @app.get("/", response_class=HTMLResponse)
-def index(): return RedirectResponse("/admin")
+def index(request: Request):
+
+    if admin_logged_in(request):
+        return RedirectResponse(
+            "/admin",
+            status_code=303
+        )
+
+    return login_page()
+
+
+@app.post("/login", response_class=HTMLResponse)
+def login(
+    username: str = Form(...),
+    password: str = Form(...)
+):
+
+    if username != ADMIN_USER or password != ADMIN_PASSWORD:
+        return login_page("Неверный логин или пароль")
+
+    token = uuid.uuid5(
+        uuid.NAMESPACE_DNS,
+        ADMIN_USER + ADMIN_PASSWORD
+    ).hex
+
+    response = RedirectResponse(
+        "/admin",
+        status_code=303
+    )
+
+    response.set_cookie(
+        AUTH_COOKIE,
+        token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=43200
+    )
+
+    return response
+
+
+@app.get("/logout")
+def logout():
+
+    response = RedirectResponse(
+        "/",
+        status_code=303
+    )
+
+    response.delete_cookie(AUTH_COOKIE)
+
+    return response
+
 
 @app.get("/admin", response_class=HTMLResponse)
-def admin(): return admin_page()
+def admin(request: Request):
+
+    if not admin_logged_in(request):
+        return RedirectResponse(
+            "/",
+            status_code=303
+        )
+
+    return admin_page()
+
 
 @app.post("/admin/create")
-def create_card(guest_name: str=Form(""), visit_date: str=Form(...), visit_time: str=Form(...), objects: list[str]=Form(default=[]), notes: str=Form("")):
-    guest_name=clean_guest_name(guest_name); notes=clean_note(notes); card_id=uuid.uuid4().hex[:12].upper()
-    pdf=create_pdf(card_id,guest_name,visit_date,visit_time,objects,notes)
-    con=db(); con.execute("INSERT INTO cards VALUES (?,?,?,?,?,?,?,?)",(card_id,guest_name,visit_date,visit_time,json.dumps(objects,ensure_ascii=False),notes,datetime.now().isoformat(timespec="seconds"),pdf.name)); con.commit(); con.close()
-    return RedirectResponse(f"/sky/{card_id}",status_code=303)
+def create_card(
+    request: Request,
+    guest_name: str = Form(""),
+    visit_date: str = Form(...),
+    visit_time: str = Form(...),
+    objects: list[str] = Form(default=[]),
+    notes: str = Form("")
+):
+
+    if not admin_logged_in(request):
+        return RedirectResponse(
+            "/",
+            status_code=303
+        )
+
+    guest_name = clean_guest_name(guest_name)
+    notes = clean_note(notes)
+
+    card_id = uuid.uuid4().hex[:12].upper()
+
+    pdf = create_pdf(
+        card_id,
+        guest_name,
+        visit_date,
+        visit_time,
+        objects,
+        notes
+    )
+
+    con = db()
+
+    con.execute(
+        "INSERT INTO cards VALUES (?,?,?,?,?,?,?,?)",
+        (
+            card_id,
+            guest_name,
+            visit_date,
+            visit_time,
+            json.dumps(
+                objects,
+                ensure_ascii=False
+            ),
+            notes,
+            datetime.now().isoformat(),
+            pdf.name
+        )
+    )
+
+    con.commit()
+    con.close()
+
+    return RedirectResponse(
+        f"/sky/{card_id}",
+        status_code=303
+    )
 
 @app.get("/sky/{card_id}", response_class=HTMLResponse)
 def public_card(card_id: str):
