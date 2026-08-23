@@ -284,4 +284,3 @@ def health(): return {"ok":True,"base_url":BASE_URL,"place":SETTINGS['place']}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app,host="0.0.0.0",port=int(os.getenv("PORT","8000")))
-"
