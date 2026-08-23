@@ -586,7 +586,8 @@ def create_card(
 
     return RedirectResponse(
         f"/sky/{card_id}",
-   status_code=30
+   status_code=303
+    )
 
 
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
